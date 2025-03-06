@@ -1,0 +1,205 @@
+name: Code Linting
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'src/**/*.py'
+      - 'src/**/*.ts'
+      - 'src/**/*.js'
+      - 'src/**/*.css'
+      - '.github/workflows/lint.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'src/**/*.py'
+      - 'src/**/*.ts'
+      - 'src/**/*.js'
+      - 'src/**/*.css'
+      - '.github/workflows/lint.yml'
+  workflow_dispatch:
+
+jobs:
+  backend-lint:
+    name: Backend Linting
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      
+      - name: Install dependencies
+        run: |
+          cd src/backend
+          pip install -r requirements.txt
+          pip install black flake8 flake8-bugbear isort mypy
+      
+      - name: Check code formatting with Black
+        run: |
+          cd src/backend
+          black --check --line-length 100 .
+      
+      - name: Check imports with isort
+        run: |
+          cd src/backend
+          isort --check --profile black --line-length 100 .
+      
+      - name: Lint with flake8
+        run: |
+          cd src/backend
+          flake8 .
+      
+      - name: Type check with mypy
+        run: |
+          cd src/backend
+          mypy .
+      
+      - name: Generate lint report
+        if: always()
+        run: |
+          cd src/backend
+          echo '## Backend Lint Results' > lint-report.md
+          echo '### Black' >> lint-report.md
+          black --check --line-length 100 . >> lint-report.md 2>&1 || true
+          echo '### isort' >> lint-report.md
+          isort --check --profile black --line-length 100 . >> lint-report.md 2>&1 || true
+          echo '### flake8' >> lint-report.md
+          flake8 . >> lint-report.md 2>&1 || true
+          echo '### mypy' >> lint-report.md
+          mypy . >> lint-report.md 2>&1 || true
+      
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: backend-lint-report
+          path: src/backend/lint-report.md
+  
+  web-lint:
+    name: Web Linting
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10']
+        node-version: ['16']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+          cache-dependency-path: src/web/package.json
+      
+      - name: Install Python dependencies
+        run: |
+          cd src/web
+          pip install -r requirements.txt
+          pip install black flake8 isort mypy
+      
+      - name: Install Node.js dependencies
+        run: |
+          cd src/web
+          npm install
+      
+      - name: Check Python code formatting with Black
+        run: |
+          cd src/web
+          black --check --line-length 100 .
+      
+      - name: Check Python imports with isort
+        run: |
+          cd src/web
+          isort --check --profile black --line-length 100 .
+      
+      - name: Lint Python with flake8
+        run: |
+          cd src/web
+          flake8 .
+      
+      - name: Type check Python with mypy
+        run: |
+          cd src/web
+          mypy .
+      
+      - name: Lint TypeScript with ESLint
+        run: |
+          cd src/web
+          npm run lint
+      
+      - name: Type check TypeScript
+        run: |
+          cd src/web
+          npm run type-check
+      
+      - name: Generate lint report
+        if: always()
+        run: |
+          cd src/web
+          echo '## Web Lint Results' > lint-report.md
+          echo '### Black' >> lint-report.md
+          black --check --line-length 100 . >> lint-report.md 2>&1 || true
+          echo '### isort' >> lint-report.md
+          isort --check --profile black --line-length 100 . >> lint-report.md 2>&1 || true
+          echo '### flake8' >> lint-report.md
+          flake8 . >> lint-report.md 2>&1 || true
+          echo '### mypy' >> lint-report.md
+          mypy . >> lint-report.md 2>&1 || true
+          echo '### ESLint' >> lint-report.md
+          npm run lint >> lint-report.md 2>&1 || true
+          echo '### TypeScript' >> lint-report.md
+          npm run type-check >> lint-report.md 2>&1 || true
+      
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-lint-report
+          path: src/web/lint-report.md
+  
+  lint-summary:
+    name: Lint Summary
+    runs-on: ubuntu-latest
+    needs: [backend-lint, web-lint]
+    if: always()
+    steps:
+      - name: Create lint summary
+        run: echo "## Lint Results Summary" > lint-summary.md
+      
+      - name: Check backend lint status
+        run: |
+          if [ "${{ needs.backend-lint.result }}" == "success" ]; then
+            echo "✅ Backend Lint: Passed" >> lint-summary.md
+          else
+            echo "❌ Backend Lint: Failed" >> lint-summary.md
+          fi
+      
+      - name: Check web lint status
+        run: |
+          if [ "${{ needs.web-lint.result }}" == "success" ]; then
+            echo "✅ Web Lint: Passed" >> lint-summary.md
+          else
+            echo "❌ Web Lint: Failed" >> lint-summary.md
+          fi
+      
+      - name: Upload lint summary
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-summary
+          path: lint-summary.md
