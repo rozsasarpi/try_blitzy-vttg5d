@@ -1,0 +1,527 @@
+/**
+ * Electricity Market Price Forecasting System
+ * Theme Stylesheet for Dash Visualization Interface
+ * Version: 1.0.0
+ */
+
+/* Theme Variables */
+:root {
+  /* Light Theme Variables */
+  --light-background: #f8f9fa;
+  --light-paper: #ffffff;
+  --light-text: #343a40;
+  --light-text-secondary: #6c757d;
+  --light-grid: #e9ecef;
+  --light-line: #6c757d;
+  --light-accent: #007bff;
+  --light-dalmp: #007bff;     /* Blue */
+  --light-rtlmp: #28a745;     /* Green */
+  --light-regup: #6f42c1;     /* Purple */
+  --light-regdown: #fd7e14;   /* Orange */
+  --light-rrs: #dc3545;       /* Red */
+  --light-nsrs: #20c997;      /* Teal */
+  --light-success: #28a745;
+  --light-warning: #ffc107;
+  --light-error: #dc3545;
+  --light-info: #17a2b8;
+  --light-fallback: #ffc107;
+
+  /* Dark Theme Variables */
+  --dark-background: #212529;
+  --dark-paper: #343a40;
+  --dark-text: #f8f9fa;
+  --dark-text-secondary: #adb5bd;
+  --dark-grid: #495057;
+  --dark-line: #adb5bd;
+  --dark-accent: #0d6efd;
+  --dark-dalmp: #0d6efd;      /* Brighter Blue */
+  --dark-rtlmp: #2dce4f;      /* Brighter Green */
+  --dark-regup: #8540f5;      /* Brighter Purple */
+  --dark-regdown: #ff922b;    /* Brighter Orange */
+  --dark-rrs: #f55a6a;        /* Brighter Red */
+  --dark-nsrs: #25e1ab;       /* Brighter Teal */
+  --dark-success: #2dce4f;
+  --dark-warning: #ffca2c;
+  --dark-error: #f55a6a;
+  --dark-info: #1fc8e3;
+  --dark-fallback: #ffca2c;
+
+  /* Colorblind Theme Variables */
+  --colorblind-background: #f8f9fa;
+  --colorblind-paper: #ffffff;
+  --colorblind-text: #343a40;
+  --colorblind-text-secondary: #6c757d;
+  --colorblind-grid: #e9ecef;
+  --colorblind-line: #6c757d;
+  --colorblind-accent: #0072B2;
+  --colorblind-dalmp: #0072B2;    /* Blue - colorblind safe */
+  --colorblind-rtlmp: #009E73;    /* Green - colorblind safe */
+  --colorblind-regup: #CC79A7;    /* Pink - colorblind safe */
+  --colorblind-regdown: #E69F00;  /* Orange - colorblind safe */
+  --colorblind-rrs: #D55E00;      /* Red-brown - colorblind safe */
+  --colorblind-nsrs: #56B4E9;     /* Light blue - colorblind safe */
+  --colorblind-success: #009E73;
+  --colorblind-warning: #E69F00;
+  --colorblind-error: #D55E00;
+  --colorblind-info: #56B4E9;
+  --colorblind-fallback: #E69F00;
+}
+
+/* Light Theme (Default) */
+body {
+  background-color: var(--light-background);
+  color: var(--light-text);
+}
+
+body.light-theme {
+  background-color: var(--light-background);
+  color: var(--light-text);
+}
+
+/* Dark Theme */
+body.dark-theme {
+  background-color: var(--dark-background);
+  color: var(--dark-text);
+}
+
+/* Colorblind Theme */
+body.colorblind-theme {
+  background-color: var(--colorblind-background);
+  color: var(--colorblind-text);
+}
+
+/* Light Theme Styles */
+.light-theme .dashboard-container {
+  background-color: var(--light-background);
+}
+
+.light-theme .dashboard-header {
+  border-bottom-color: var(--light-grid);
+}
+
+.light-theme .control-panel {
+  background-color: var(--light-paper);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .card {
+  background-color: var(--light-paper);
+  border-color: var(--light-grid);
+}
+
+.light-theme .btn-primary {
+  background-color: var(--light-accent);
+  border-color: var(--light-accent);
+  color: white;
+}
+
+.light-theme .btn-secondary {
+  background-color: var(--light-grid);
+  border-color: var(--light-grid);
+  color: var(--light-text);
+}
+
+.light-theme .data-table {
+  border-color: var(--light-grid);
+}
+
+.light-theme .data-table th {
+  background-color: var(--light-grid);
+  color: var(--light-text);
+}
+
+.light-theme .data-table td {
+  border-bottom-color: var(--light-grid);
+}
+
+.light-theme .status-indicator {
+  background-color: var(--light-grid);
+  color: var(--light-text);
+}
+
+.light-theme .fallback-indicator {
+  background-color: var(--light-fallback);
+  color: var(--light-text);
+}
+
+/* Dark Theme Styles */
+.dark-theme .dashboard-container {
+  background-color: var(--dark-background);
+}
+
+.dark-theme .dashboard-header {
+  border-bottom-color: var(--dark-grid);
+}
+
+.dark-theme .control-panel {
+  background-color: var(--dark-paper);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .card {
+  background-color: var(--dark-paper);
+  border-color: var(--dark-grid);
+}
+
+.dark-theme .btn-primary {
+  background-color: var(--dark-accent);
+  border-color: var(--dark-accent);
+  color: white;
+}
+
+.dark-theme .btn-secondary {
+  background-color: var(--dark-grid);
+  border-color: var(--dark-grid);
+  color: var(--dark-text);
+}
+
+.dark-theme .data-table {
+  border-color: var(--dark-grid);
+}
+
+.dark-theme .data-table th {
+  background-color: var(--dark-grid);
+  color: var(--dark-text);
+}
+
+.dark-theme .data-table td {
+  border-bottom-color: var(--dark-grid);
+}
+
+.dark-theme .data-table tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-theme .data-table tr:hover {
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.dark-theme .status-indicator {
+  background-color: var(--dark-grid);
+  color: var(--dark-text);
+}
+
+.dark-theme .fallback-indicator {
+  background-color: var(--dark-fallback);
+  color: var(--dark-background);
+}
+
+/* Colorblind Theme Styles */
+.colorblind-theme .dashboard-container {
+  background-color: var(--colorblind-background);
+}
+
+.colorblind-theme .dashboard-header {
+  border-bottom-color: var(--colorblind-grid);
+}
+
+.colorblind-theme .control-panel {
+  background-color: var(--colorblind-paper);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.colorblind-theme .card {
+  background-color: var(--colorblind-paper);
+  border-color: var(--colorblind-grid);
+}
+
+.colorblind-theme .btn-primary {
+  background-color: var(--colorblind-accent);
+  border-color: var(--colorblind-accent);
+  color: white;
+}
+
+.colorblind-theme .btn-secondary {
+  background-color: var(--colorblind-grid);
+  border-color: var(--colorblind-grid);
+  color: var(--colorblind-text);
+}
+
+.colorblind-theme .data-table {
+  border-color: var(--colorblind-grid);
+}
+
+.colorblind-theme .data-table th {
+  background-color: var(--colorblind-grid);
+  color: var(--colorblind-text);
+}
+
+.colorblind-theme .data-table td {
+  border-bottom-color: var(--colorblind-grid);
+}
+
+.colorblind-theme .status-indicator {
+  background-color: var(--colorblind-grid);
+  color: var(--colorblind-text);
+}
+
+.colorblind-theme .fallback-indicator {
+  background-color: var(--colorblind-fallback);
+  color: var(--colorblind-text);
+}
+
+/* Product-Specific Colors */
+.light-theme .product-dalmp {
+  color: var(--light-dalmp);
+}
+
+.light-theme .product-rtlmp {
+  color: var(--light-rtlmp);
+}
+
+.light-theme .product-regup {
+  color: var(--light-regup);
+}
+
+.light-theme .product-regdown {
+  color: var(--light-regdown);
+}
+
+.light-theme .product-rrs {
+  color: var(--light-rrs);
+}
+
+.light-theme .product-nsrs {
+  color: var(--light-nsrs);
+}
+
+.dark-theme .product-dalmp {
+  color: var(--dark-dalmp);
+}
+
+.dark-theme .product-rtlmp {
+  color: var(--dark-rtlmp);
+}
+
+.dark-theme .product-regup {
+  color: var(--dark-regup);
+}
+
+.dark-theme .product-regdown {
+  color: var(--dark-regdown);
+}
+
+.dark-theme .product-rrs {
+  color: var(--dark-rrs);
+}
+
+.dark-theme .product-nsrs {
+  color: var(--dark-nsrs);
+}
+
+.colorblind-theme .product-dalmp {
+  color: var(--colorblind-dalmp);
+}
+
+.colorblind-theme .product-rtlmp {
+  color: var(--colorblind-rtlmp);
+}
+
+.colorblind-theme .product-regup {
+  color: var(--colorblind-regup);
+}
+
+.colorblind-theme .product-regdown {
+  color: var(--colorblind-regdown);
+}
+
+.colorblind-theme .product-rrs {
+  color: var(--colorblind-rrs);
+}
+
+.colorblind-theme .product-nsrs {
+  color: var(--colorblind-nsrs);
+}
+
+/* Chart Styling */
+.light-theme .js-plotly-plot {
+  background-color: var(--light-paper);
+}
+
+.light-theme .js-plotly-plot .main-svg {
+  background-color: var(--light-paper) !important;
+}
+
+.light-theme .js-plotly-plot .xaxis .xtick text {
+  fill: var(--light-text) !important;
+}
+
+.light-theme .js-plotly-plot .yaxis .ytick text {
+  fill: var(--light-text) !important;
+}
+
+.light-theme .js-plotly-plot .modebar {
+  background-color: var(--light-paper) !important;
+}
+
+.dark-theme .js-plotly-plot {
+  background-color: var(--dark-paper);
+}
+
+.dark-theme .js-plotly-plot .main-svg {
+  background-color: var(--dark-paper) !important;
+}
+
+.dark-theme .js-plotly-plot .xaxis .xtick text {
+  fill: var(--dark-text) !important;
+}
+
+.dark-theme .js-plotly-plot .yaxis .ytick text {
+  fill: var(--dark-text) !important;
+}
+
+.dark-theme .js-plotly-plot .modebar {
+  background-color: var(--dark-paper) !important;
+}
+
+.dark-theme .js-plotly-plot .modebar-btn path {
+  fill: var(--dark-text) !important;
+}
+
+.colorblind-theme .js-plotly-plot {
+  background-color: var(--colorblind-paper);
+}
+
+.colorblind-theme .js-plotly-plot .main-svg {
+  background-color: var(--colorblind-paper) !important;
+}
+
+.colorblind-theme .js-plotly-plot .xaxis .xtick text {
+  fill: var(--colorblind-text) !important;
+}
+
+.colorblind-theme .js-plotly-plot .yaxis .ytick text {
+  fill: var(--colorblind-text) !important;
+}
+
+.colorblind-theme .js-plotly-plot .modebar {
+  background-color: var(--colorblind-paper) !important;
+}
+
+/* Status Colors */
+.light-theme .status-success {
+  background-color: var(--light-success);
+  color: white;
+}
+
+.light-theme .status-warning {
+  background-color: var(--light-warning);
+  color: var(--light-text);
+}
+
+.light-theme .status-error {
+  background-color: var(--light-error);
+  color: white;
+}
+
+.light-theme .status-info {
+  background-color: var(--light-info);
+  color: white;
+}
+
+.dark-theme .status-success {
+  background-color: var(--dark-success);
+  color: white;
+}
+
+.dark-theme .status-warning {
+  background-color: var(--dark-warning);
+  color: var(--dark-background);
+}
+
+.dark-theme .status-error {
+  background-color: var(--dark-error);
+  color: white;
+}
+
+.dark-theme .status-info {
+  background-color: var(--dark-info);
+  color: white;
+}
+
+.colorblind-theme .status-success {
+  background-color: var(--colorblind-success);
+  color: white;
+}
+
+.colorblind-theme .status-warning {
+  background-color: var(--colorblind-warning);
+  color: var(--colorblind-text);
+}
+
+.colorblind-theme .status-error {
+  background-color: var(--colorblind-error);
+  color: white;
+}
+
+.colorblind-theme .status-info {
+  background-color: var(--colorblind-info);
+  color: var(--colorblind-text);
+}
+
+/* Accessibility Enhancements */
+.light-theme :focus {
+  outline: 2px solid var(--light-accent);
+  outline-offset: 2px;
+}
+
+.dark-theme :focus {
+  outline: 2px solid var(--dark-accent);
+  outline-offset: 2px;
+}
+
+.colorblind-theme :focus {
+  outline: 3px solid var(--colorblind-accent);
+  outline-offset: 3px;
+}
+
+.light-theme .btn:focus-visible {
+  outline: 3px solid var(--light-accent);
+  outline-offset: 3px;
+}
+
+.dark-theme .btn:focus-visible {
+  outline: 3px solid var(--dark-accent);
+  outline-offset: 3px;
+}
+
+.colorblind-theme .btn:focus-visible {
+  outline: 4px solid var(--colorblind-accent);
+  outline-offset: 3px;
+}
+
+/* Theme Switcher */
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.theme-switcher-button {
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.theme-switcher-button.active {
+  font-weight: bold;
+}
+
+.light-theme .theme-switcher-button.light {
+  background-color: var(--light-accent);
+  color: white;
+}
+
+.dark-theme .theme-switcher-button.dark {
+  background-color: var(--dark-accent);
+  color: white;
+}
+
+.colorblind-theme .theme-switcher-button.colorblind {
+  background-color: var(--colorblind-accent);
+  color: white;
+}
