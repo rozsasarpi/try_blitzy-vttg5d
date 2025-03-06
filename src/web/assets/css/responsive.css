@@ -1,0 +1,480 @@
+/**
+ * Electricity Market Price Forecasting System
+ * Responsive Stylesheet for Dash Visualization Interface
+ * Version: 1.0.0
+ */
+
+/* Responsive Breakpoints */
+:root {
+  --mobile-breakpoint: 768px;
+  --tablet-breakpoint: 1024px;
+  
+  /* Device-specific variables */
+  --container-width-desktop: 100%;
+  --container-width-tablet: 100%;
+  --container-width-mobile: 100%;
+  
+  --spacing-desktop: var(--spacing-md);
+  --spacing-tablet: var(--spacing-sm);
+  --spacing-mobile: var(--spacing-xs);
+  
+  --font-size-desktop: var(--font-size-base);
+  --font-size-tablet: calc(var(--font-size-base) * 0.9);
+  --font-size-mobile: calc(var(--font-size-base) * 0.85);
+  
+  --chart-height-desktop: 500px;
+  --chart-height-tablet: 400px;
+  --chart-height-mobile: 350px;
+  
+  --control-panel-width-desktop: 25%;
+  --control-panel-width-tablet: 100%;
+  --control-panel-width-mobile: 100%;
+  
+  /* Theme color variables to avoid circular dependency with theme.css */
+  --color-primary: #007bff;
+  --color-secondary: #28a745;
+  --color-tertiary: #6f42c1;
+  --color-warning: #ffc107;
+  --color-error: #dc3545;
+  --color-text: #343a40;
+  --color-muted: #6c757d;
+  --color-background: #f8f9fa;
+}
+
+/* Responsive Variables */
+@media screen and (max-width: 767px) {
+  body {
+    font-size: var(--font-size-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  body {
+    font-size: var(--font-size-tablet);
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  body {
+    font-size: var(--font-size-desktop);
+  }
+}
+
+/* Desktop Layout (Default) */
+.dashboard-container {
+  width: var(--container-width-desktop);
+  padding: var(--spacing-desktop);
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Responsive Container */
+@media screen and (max-width: 767px) {
+  .dashboard-container {
+    width: var(--container-width-mobile);
+    padding: var(--spacing-mobile);
+    flex-direction: column;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .dashboard-container {
+    width: var(--container-width-tablet);
+    padding: var(--spacing-tablet);
+    flex-direction: column;
+  }
+}
+
+/* Responsive Typography */
+@media screen and (max-width: 767px) {
+  h1 {
+    font-size: 20px;
+    margin-bottom: var(--spacing-mobile);
+  }
+  
+  h2 {
+    font-size: 18px;
+    margin-bottom: var(--spacing-mobile);
+  }
+  
+  h3 {
+    font-size: 16px;
+    margin-bottom: var(--spacing-mobile);
+  }
+  
+  p, .text-muted {
+    margin-bottom: var(--spacing-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  h1 {
+    font-size: 22px;
+    margin-bottom: var(--spacing-tablet);
+  }
+  
+  h2 {
+    font-size: 19px;
+    margin-bottom: var(--spacing-tablet);
+  }
+  
+  h3 {
+    font-size: 17px;
+    margin-bottom: var(--spacing-tablet);
+  }
+  
+  p, .text-muted {
+    margin-bottom: var(--spacing-tablet);
+  }
+}
+
+/* Responsive Layout Structure */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+@media screen and (max-width: 767px) {
+  .row {
+    flex-direction: column;
+    margin-right: calc(-1 * var(--spacing-mobile));
+    margin-left: calc(-1 * var(--spacing-mobile));
+  }
+  
+  .col {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding-right: var(--spacing-mobile);
+    padding-left: var(--spacing-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .row {
+    margin-right: calc(-1 * var(--spacing-tablet));
+    margin-left: calc(-1 * var(--spacing-tablet));
+  }
+  
+  .col {
+    padding-right: var(--spacing-tablet);
+    padding-left: var(--spacing-tablet);
+  }
+}
+
+/* Control Panel Responsive Styles */
+.control-panel {
+  width: var(--control-panel-width-desktop);
+  padding: var(--spacing-desktop);
+  background-color: var(--color-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+}
+
+@media screen and (max-width: 767px) {
+  .control-panel {
+    width: var(--control-panel-width-mobile);
+    padding: var(--spacing-mobile);
+    margin-bottom: var(--spacing-mobile);
+  }
+  
+  .control-group {
+    margin-bottom: var(--spacing-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .control-panel {
+    width: var(--control-panel-width-tablet);
+    padding: var(--spacing-tablet);
+    margin-bottom: var(--spacing-tablet);
+  }
+  
+  .control-group {
+    margin-bottom: var(--spacing-tablet);
+  }
+}
+
+/* Time Series Visualization Responsive Styles */
+.time-series-container {
+  height: var(--chart-height-desktop);
+  margin-bottom: var(--spacing-desktop);
+}
+
+@media screen and (max-width: 767px) {
+  .time-series-container {
+    height: var(--chart-height-mobile);
+    margin-bottom: var(--spacing-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .time-series-container {
+    height: var(--chart-height-tablet);
+    margin-bottom: var(--spacing-tablet);
+  }
+}
+
+/* Probability Distribution Responsive Styles */
+.distribution-container {
+  height: calc(var(--chart-height-desktop) * 0.8);
+  margin-bottom: var(--spacing-desktop);
+}
+
+@media screen and (max-width: 767px) {
+  .distribution-container {
+    height: calc(var(--chart-height-mobile) * 0.85);
+    margin-bottom: var(--spacing-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .distribution-container {
+    height: calc(var(--chart-height-tablet) * 0.85);
+    margin-bottom: var(--spacing-tablet);
+  }
+}
+
+/* Forecast Table Responsive Styles */
+.forecast-table-container {
+  margin-bottom: var(--spacing-desktop);
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+@media screen and (max-width: 767px) {
+  .forecast-table-container {
+    margin-bottom: var(--spacing-mobile);
+  }
+  
+  .data-table {
+    font-size: calc(var(--font-size-mobile) * 0.95);
+  }
+  
+  .data-table th, .data-table td {
+    padding: var(--spacing-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .forecast-table-container {
+    margin-bottom: var(--spacing-tablet);
+  }
+  
+  .data-table th, .data-table td {
+    padding: var(--spacing-tablet);
+  }
+}
+
+/* Product Comparison Responsive Styles */
+.product-comparison-container {
+  height: calc(var(--chart-height-desktop) * 0.9);
+  margin-bottom: var(--spacing-desktop);
+}
+
+@media screen and (max-width: 767px) {
+  .product-comparison-container {
+    height: calc(var(--chart-height-mobile) * 0.9);
+    margin-bottom: var(--spacing-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .product-comparison-container {
+    height: calc(var(--chart-height-tablet) * 0.9);
+    margin-bottom: var(--spacing-tablet);
+  }
+}
+
+/* Export Panel Responsive Styles */
+.export-container {
+  padding-top: var(--spacing-desktop);
+  margin-top: var(--spacing-desktop);
+  border-top: 1px solid var(--color-border);
+}
+
+@media screen and (max-width: 767px) {
+  .export-container {
+    padding-top: var(--spacing-mobile);
+    margin-top: var(--spacing-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .export-container {
+    padding-top: var(--spacing-tablet);
+    margin-top: var(--spacing-tablet);
+  }
+}
+
+/* Interactive Elements Responsive Styles */
+@media screen and (max-width: 767px) {
+  button, .btn {
+    padding: calc(var(--spacing-mobile) * 1.2) var(--spacing-mobile);
+    font-size: var(--font-size-mobile);
+    min-height: 44px; /* Accessibility - touch target size */
+  }
+  
+  input[type='text'], input[type='number'], select {
+    padding: calc(var(--spacing-mobile) * 1.2);
+    font-size: var(--font-size-mobile);
+    min-height: 44px; /* Accessibility - touch target size */
+  }
+  
+  .Select-control, .DateInput_input {
+    min-height: 44px; /* Accessibility - touch target size */
+    font-size: var(--font-size-mobile);
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  button, .btn {
+    padding: calc(var(--spacing-tablet) * 0.8) var(--spacing-tablet);
+    font-size: var(--font-size-tablet);
+  }
+  
+  input[type='text'], input[type='number'], select {
+    padding: calc(var(--spacing-tablet) * 0.8);
+    font-size: var(--font-size-tablet);
+  }
+  
+  .Select-control, .DateInput_input {
+    font-size: var(--font-size-tablet);
+  }
+}
+
+/* Chart Responsive Styles */
+@media screen and (max-width: 767px) {
+  .js-plotly-plot {
+    max-height: var(--chart-height-mobile);
+  }
+  
+  .js-plotly-plot .xaxis .xtick text {
+    font-size: calc(var(--font-size-mobile) * 0.85) !important;
+    transform: rotate(45deg);
+    text-anchor: start;
+  }
+  
+  .js-plotly-plot .yaxis .ytick text {
+    font-size: calc(var(--font-size-mobile) * 0.85) !important;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .js-plotly-plot {
+    max-height: var(--chart-height-tablet);
+  }
+  
+  .js-plotly-plot .xaxis .xtick text {
+    font-size: calc(var(--font-size-tablet) * 0.9) !important;
+  }
+  
+  .js-plotly-plot .yaxis .ytick text {
+    font-size: calc(var(--font-size-tablet) * 0.9) !important;
+  }
+}
+
+/* Responsive Utility Classes */
+.d-desktop-only {
+  display: block;
+}
+
+@media screen and (max-width: 1023px) {
+  .d-desktop-only {
+    display: none;
+  }
+}
+
+.d-tablet-only {
+  display: none;
+}
+
+@media screen and (max-width: 767px) {
+  .d-tablet-only {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .d-tablet-only {
+    display: none;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  .d-tablet-only {
+    display: block;
+  }
+}
+
+.d-mobile-only {
+  display: none;
+}
+
+@media screen and (min-width: 768px) {
+  .d-mobile-only {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .d-mobile-only {
+    display: block;
+  }
+}
+
+.d-tablet-desktop {
+  display: block;
+}
+
+@media screen and (max-width: 767px) {
+  .d-tablet-desktop {
+    display: none;
+  }
+}
+
+.d-mobile-tablet {
+  display: none;
+}
+
+@media screen and (min-width: 1024px) {
+  .d-mobile-tablet {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 1023px) {
+  .d-mobile-tablet {
+    display: block;
+  }
+}
+
+/* Accessibility Responsive Adjustments */
+@media screen and (max-width: 767px) {
+  button:focus, a:focus, [role='button']:focus {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 3px;
+  }
+  
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 1023px) {
+  button:focus, a:focus, [role='button']:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+  
+  .touch-target {
+    min-height: 36px;
+    min-width: 36px;
+  }
+}
