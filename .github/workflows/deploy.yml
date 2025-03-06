@@ -1,0 +1,282 @@
+# Deploy workflow configuration for GitHub Actions
+name: Deploy Forecasting System
+
+on:
+  workflow_run:
+    workflows: ["Build Docker Images"]
+    types:
+      - completed
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+        default: development
+      version:
+        description: "Version tag to deploy"
+        required: false
+        type: string
+        default: ""
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE_NAME: ${{ github.repository }}/forecasting-backend
+  WEB_IMAGE_NAME: ${{ github.repository }}/forecasting-web
+
+jobs:
+  prepare-deployment:
+    name: Prepare Deployment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      backend_image: ${{ steps.set-images.outputs.backend_image }}
+      web_image: ${{ steps.set-images.outputs.web_image }}
+      version: ${{ steps.set-version.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3 # actions/checkout v3
+      - name: Determine environment
+        id: set-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=development" >> $GITHUB_OUTPUT
+          fi
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3 # actions/download-artifact v3
+        with:
+          name: build-summary
+          path: ./artifacts
+      - name: Set image references
+        id: set-images
+        run: |
+          BACKEND_IMAGE=$(grep "Backend Image:" ./artifacts/build-summary.md | cut -d' ' -f3-)
+          echo "backend_image=$BACKEND_IMAGE" >> $GITHUB_OUTPUT
+          WEB_IMAGE=$(grep "Web Image:" ./artifacts/build-summary.md | cut -d' ' -f3-)
+          echo "web_image=$WEB_IMAGE" >> $GITHUB_OUTPUT
+      - name: Set version
+        id: set-version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.version }}" != "" ]]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=$(date +%Y%m%d%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+      - name: Validate deployment configuration
+        run: |
+          echo "Preparing to deploy to ${{ steps.set-env.outputs.environment }} environment"
+          echo "Backend Image: ${{ steps.set-images.outputs.backend_image }}"
+          echo "Web Image: ${{ steps.set-images.outputs.web_image }}"
+          echo "Version: ${{ steps.set-version.outputs.version }}"
+
+  deploy-development:
+    name: Deploy to Development
+    needs: [prepare-deployment]
+    if: "needs.prepare-deployment.outputs.environment == 'development'"
+    runs-on: ubuntu-latest
+    environment:
+      name: development
+      url: http://dev-forecast.example.com
+    outputs:
+      status: ${{ steps.deployment.outputs.status }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3 # actions/checkout v3
+      - name: Deploy to development server
+        id: deployment
+        uses: appleboy/ssh-action@v0.1.10 # appleboy/ssh-action v0.1.10
+        with:
+          host: ${{ secrets.DEV_HOST }}
+          username: ${{ secrets.DEV_USERNAME }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          script: |
+            cd /opt/forecasting-system
+            git pull
+            export BACKEND_IMAGE=${{ needs.prepare-deployment.outputs.backend_image }}
+            export WEB_IMAGE=${{ needs.prepare-deployment.outputs.web_image }}
+            export VERSION=${{ needs.prepare-deployment.outputs.version }}
+            ./infrastructure/scripts/deploy.sh --environment development --cleanup
+      - name: Verify deployment
+        run: |
+          echo "Verifying development deployment..."
+          curl -sSf http://${{ secrets.DEV_HOST }}:8050/ > /dev/null
+          echo "✅ Visualization service is accessible"
+          curl -sSf http://${{ secrets.DEV_HOST }}:8000/api/health > /dev/null
+          echo "✅ Forecasting service is accessible"
+          echo "status=success" >> $GITHUB_OUTPUT || echo "status=failure" >> $GITHUB_OUTPUT
+        id: verification
+      - name: Generate deployment report
+        run: |
+          echo "## Development Deployment Results" > deployment-report.md
+          echo "**Environment:** Development" >> deployment-report.md
+          echo "**Backend Image:** ${{ needs.prepare-deployment.outputs.backend_image }}" >> deployment-report.md
+          echo "**Web Image:** ${{ needs.prepare-deployment.outputs.web_image }}" >> deployment-report.md
+          echo "**Version:** ${{ needs.prepare-deployment.outputs.version }}" >> deployment-report.md
+          echo "**Status:** ${{ steps.verification.outputs.status == 'success' && '✅ Success' || '❌ Failed' }}" >> deployment-report.md
+          echo "**Timestamp:** $(date)" >> deployment-report.md
+      - name: Upload deployment report
+        uses: actions/upload-artifact@v3 # actions/upload-artifact v3
+        with:
+          name: development-deployment-report
+          path: deployment-report.md
+
+  deploy-staging:
+    name: Deploy to Staging
+    needs: [prepare-deployment]
+    if: "needs.prepare-deployment.outputs.environment == 'staging'"
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: http://staging-forecast.example.com
+    outputs:
+      status: ${{ steps.deployment.outputs.status }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3 # actions/checkout v3
+      - name: Deploy to staging server
+        id: deployment
+        uses: appleboy/ssh-action@v0.1.10 # appleboy/ssh-action v0.1.10
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USERNAME }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /opt/forecasting-system
+            git pull
+            export BACKEND_IMAGE=${{ needs.prepare-deployment.outputs.backend_image }}
+            export WEB_IMAGE=${{ needs.prepare-deployment.outputs.web_image }}
+            export VERSION=${{ needs.prepare-deployment.outputs.version }}
+            ./infrastructure/scripts/deploy.sh --environment staging --cleanup
+      - name: Verify deployment
+        run: |
+          echo "Verifying staging deployment..."
+          curl -sSf http://${{ secrets.STAGING_HOST }}:8050/ > /dev/null
+          echo "✅ Visualization service is accessible"
+          curl -sSf http://${{ secrets.STAGING_HOST }}:8000/api/health > /dev/null
+          echo "✅ Forecasting service is accessible"
+          echo "status=success" >> $GITHUB_OUTPUT || echo "status=failure" >> $GITHUB_OUTPUT
+        id: verification
+      - name: Generate deployment report
+        run: |
+          echo "## Staging Deployment Results" > deployment-report.md
+          echo "**Environment:** Staging" >> deployment-report.md
+          echo "**Backend Image:** ${{ needs.prepare-deployment.outputs.backend_image }}" >> deployment-report.md
+          echo "**Web Image:** ${{ needs.prepare-deployment.outputs.web_image }}" >> deployment-report.md
+          echo "**Version:** ${{ needs.prepare-deployment.outputs.version }}" >> deployment-report.md
+          echo "**Status:** ${{ steps.verification.outputs.status == 'success' && '✅ Success' || '❌ Failed' }}" >> deployment-report.md
+          echo "**Timestamp:** $(date)" >> deployment-report.md
+      - name: Upload deployment report
+        uses: actions/upload-artifact@v3 # actions/upload-artifact v3
+        with:
+          name: staging-deployment-report
+          path: deployment-report.md
+
+  deploy-production:
+    name: Deploy to Production
+    needs: [prepare-deployment]
+    if: "needs.prepare-deployment.outputs.environment == 'production'"
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: http://forecast.example.com
+    outputs:
+      status: ${{ steps.deployment.outputs.status }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3 # actions/checkout v3
+      - name: Deploy to production server
+        id: deployment
+        uses: appleboy/ssh-action@v0.1.10 # appleboy/ssh-action v0.1.10
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/forecasting-system
+            git pull
+            export BACKEND_IMAGE=${{ needs.prepare-deployment.outputs.backend_image }}
+            export WEB_IMAGE=${{ needs.prepare-deployment.outputs.web_image }}
+            export VERSION=${{ needs.prepare-deployment.outputs.version }}
+            ./infrastructure/scripts/deploy.sh --environment production
+      - name: Verify deployment
+        run: |
+          echo "Verifying production deployment..."
+          curl -sSf http://${{ secrets.PROD_HOST }}:8050/ > /dev/null
+          echo "✅ Visualization service is accessible"
+          curl -sSf http://${{ secrets.PROD_HOST }}:8000/api/health > /dev/null
+          echo "✅ Forecasting service is accessible"
+          echo "status=success" >> $GITHUB_OUTPUT || echo "status=failure" >> $GITHUB_OUTPUT
+        id: verification
+      - name: Generate deployment report
+        run: |
+          echo "## Production Deployment Results" > deployment-report.md
+          echo "**Environment:** Production" >> deployment-report.md
+          echo "**Backend Image:** ${{ needs.prepare-deployment.outputs.backend_image }}" >> deployment-report.md
+          echo "**Web Image:** ${{ needs.prepare-deployment.outputs.web_image }}" >> deployment-report.md
+          echo "**Version:** ${{ needs.prepare-deployment.outputs.version }}" >> deployment-report.md
+          echo "**Status:** ${{ steps.verification.outputs.status == 'success' && '✅ Success' || '❌ Failed' }}" >> deployment-report.md
+          echo "**Timestamp:** $(date)" >> deployment-report.md
+      - name: Upload deployment report
+        uses: actions/upload-artifact@v3 # actions/upload-artifact v3
+        with:
+          name: production-deployment-report
+          path: deployment-report.md
+
+  deployment-summary:
+    name: Deployment Summary
+    runs-on: ubuntu-latest
+    needs: [prepare-deployment, deploy-development, deploy-staging, deploy-production]
+    if: always()
+    steps:
+      - name: Create deployment summary
+        run: echo "## Deployment Results Summary" > deployment-summary.md
+      - name: Check development deployment
+        if: "needs.prepare-deployment.outputs.environment == 'development'"
+        run: |
+          if [ "${{ needs.deploy-development.result }}" == "success" ]; then
+            echo "✅ Development: Deployed successfully" >> deployment-summary.md
+          else
+            echo "❌ Development: Deployment failed" >> deployment-summary.md
+          fi
+      - name: Check staging deployment
+        if: "needs.prepare-deployment.outputs.environment == 'staging'"
+        run: |
+          if [ "${{ needs.deploy-staging.result }}" == "success" ]; then
+            echo "✅ Staging: Deployed successfully" >> deployment-summary.md
+          else
+            echo "❌ Staging: Deployment failed" >> deployment-summary.md
+          fi
+      - name: Check production deployment
+        if: "needs.prepare-deployment.outputs.environment == 'production'"
+        run: |
+          if [ "${{ needs.deploy-production.result }}" == "success" ]; then
+            echo "✅ Production: Deployed successfully" >> deployment-summary.md
+          else
+            echo "❌ Production: Deployment failed" >> deployment-summary.md
+          fi
+      - name: Add environment info
+        run: echo "**Environment:** ${{ needs.prepare-deployment.outputs.environment }}" >> deployment-summary.md
+      - name: Add image info
+        run: |
+          echo "**Backend Image:** ${{ needs.prepare-deployment.outputs.backend_image }}" >> deployment-summary.md
+          echo "**Web Image:** ${{ needs.prepare-deployment.outputs.web_image }}" >> deployment-summary.md
+      - name: Add version info
+        run: echo "**Version:** ${{ needs.prepare-deployment.outputs.version }}" >> deployment-summary.md
+      - name: Add deployment timestamp
+        run: echo "**Deployment Time:** $(date)" >> deployment-summary.md
+      - name: Upload deployment summary
+        uses: actions/upload-artifact@v3 # actions/upload-artifact v3
+        with:
+          name: deployment-summary
+          path: deployment-summary.md
