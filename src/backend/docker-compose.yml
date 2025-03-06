@@ -1,0 +1,70 @@
+version: '3.8'  # docker-compose version: 3.8
+
+services:
+  forecasting-service:  # Main service for running the forecasting pipeline and API
+    description: Main service for running the forecasting pipeline and API
+    build:
+      context: .  # context for the build
+      dockerfile: Dockerfile  # Dockerfile path
+    environment:  # Environment variables for the service
+      - ENVIRONMENT=${ENVIRONMENT:-development}  # Set environment, default to development
+      - DEBUG=${DEBUG:-True}  # Enable debug mode, default to True
+      - API_HOST=0.0.0.0  # API host address
+      - API_PORT=8000  # API port number
+      - FORECAST_HORIZON_HOURS=72  # Forecast horizon in hours
+      - PROBABILISTIC_SAMPLE_COUNT=100  # Number of probabilistic samples
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}  # Set log level, default to INFO
+    env_file:
+      - .env  # Load environment variables from .env file
+    volumes:  # Volume mappings
+      - forecast-data:/app/data  # Mount forecast data volume
+      - forecast-logs:/app/logs  # Mount forecast logs volume
+    ports:
+      - "8000:8000"  # Expose port 8000
+    restart: unless-stopped  # Restart policy
+    healthcheck:  # Health check configuration
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health", "||", "exit", "1"]  # Command to check health
+      interval: 30s  # Interval between checks
+      timeout: 10s  # Timeout for each check
+      retries: 3  # Number of retries if check fails
+      start_period: 30s  # Initial delay before starting checks
+    networks:
+      - forecast-network  # Add service to forecast network
+    command: python -m main serve  # Command to run the application
+
+  scheduler-service:  # Service dedicated to running the scheduler for forecast generation
+    description: Service dedicated to running the scheduler for forecast generation
+    build:
+      context: .  # context for the build
+      dockerfile: Dockerfile  # Dockerfile path
+    environment:  # Environment variables for the service
+      - ENVIRONMENT=${ENVIRONMENT:-development}  # Set environment, default to development
+      - DEBUG=${DEBUG:-True}  # Enable debug mode, default to True
+      - FORECAST_HORIZON_HOURS=72  # Forecast horizon in hours
+      - PROBABILISTIC_SAMPLE_COUNT=100  # Number of probabilistic samples
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}  # Set log level, default to INFO
+      - SCHEDULER_ENABLED=True  # Enable the scheduler
+    env_file:
+      - .env  # Load environment variables from .env file
+    volumes:  # Volume mappings
+      - forecast-data:/app/data  # Mount forecast data volume
+      - forecast-logs:/app/logs  # Mount forecast logs volume
+    restart: unless-stopped  # Restart policy
+    depends_on:
+      - forecasting-service  # Ensure forecasting service is running first
+    networks:
+      - forecast-network  # Add service to forecast network
+    command: python -m main schedule  # Command to run the scheduler
+
+volumes:
+  forecast-data:  # Persistent storage for forecast dataframes
+    description: Persistent storage for forecast dataframes
+    driver: local  # Use local driver
+  forecast-logs:  # Persistent storage for application logs
+    description: Persistent storage for application logs
+    driver: local  # Use local driver
+
+networks:
+  forecast-network:  # Internal network for forecast services communication
+    description: Internal network for forecast services communication
+    driver: bridge  # Use bridge driver
