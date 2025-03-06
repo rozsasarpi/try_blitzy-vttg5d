@@ -1,0 +1,115 @@
+# Prometheus configuration for Electricity Market Price Forecasting System
+# This file defines metrics collection settings for system resources and application-specific metrics
+
+# Global configuration
+global:
+  scrape_interval: 15s      # Set the scrape interval to every 15 seconds
+  evaluation_interval: 15s  # Evaluate rules every 15 seconds
+  scrape_timeout: 10s       # Timeout after 10 seconds
+
+# Rule files to load (can contain recording rules and alerts)
+rule_files:
+  - "/etc/prometheus/rules/*.yml"
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # AlertManager will be configured separately
+          # - "alertmanager:9093"
+
+# Scrape configurations for monitoring various components
+scrape_configs:
+  # Self monitoring - Prometheus monitors itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Node exporter monitoring - System metrics (CPU, memory, disk, network)
+  - job_name: "node-exporter"
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # Forecasting service metrics
+  - job_name: "forecasting-service"
+    scrape_interval: 30s
+    metrics_path: "/api/metrics"
+    static_configs:
+      - targets: ["forecasting-service:8000"]
+    metric_relabel_configs:
+      # Keep only metrics relevant to forecasting service
+      - source_labels: [__name__]
+        regex: 'forecast_.*|process_.*|go_.*'
+        action: keep
+
+  # Scheduler service metrics
+  - job_name: "scheduler-service"
+    scrape_interval: 30s
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["scheduler-service:8000"]
+    metric_relabel_configs:
+      # Keep only metrics relevant to scheduler service
+      - source_labels: [__name__]
+        regex: 'scheduler_.*|process_.*|go_.*'
+        action: keep
+
+  # Visualization service metrics
+  - job_name: "visualization-service"
+    scrape_interval: 30s
+    metrics_path: "/metrics"
+    static_configs:
+      - targets: ["visualization-service:8050"]
+    metric_relabel_configs:
+      # Keep only metrics relevant to visualization service
+      - source_labels: [__name__]
+        regex: 'visualization_.*|dash_.*|process_.*|go_.*'
+        action: keep
+
+  # File storage metrics
+  - job_name: "storage-metrics"
+    scrape_interval: 60s
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    metrics_path: "/metrics"
+    metric_relabel_configs:
+      # Keep only filesystem metrics
+      - source_labels: [__name__]
+        regex: 'node_filesystem_.*'
+        action: keep
+
+# The following metrics are collected across the different targets:
+#
+# System Health Metrics:
+# - node_memory_MemAvailable_bytes, node_memory_MemTotal_bytes
+# - node_cpu_seconds_total
+# - node_filesystem_size_bytes, node_filesystem_free_bytes
+# - node_network_receive_bytes_total, node_network_transmit_bytes_total
+#
+# Application Metrics:
+# - forecast_generation_success
+# - forecast_fallback_activated
+# - forecast_last_generation_timestamp
+# - forecast_pipeline_execution_time_seconds
+# - forecast_data_ingestion_time_seconds
+# - forecast_feature_engineering_time_seconds
+# - forecast_model_execution_time_seconds
+# - forecast_validation_time_seconds
+# - forecast_storage_time_seconds
+#
+# Business Metrics:
+# - forecast_mape_dalmp, forecast_mape_rtlmp
+# - forecast_rmse_dalmp, forecast_rmse_rtlmp
+# - forecast_r2_dalmp, forecast_r2_rtlmp
+# - forecast_availability_percentage
+# - forecast_completeness_percentage
+# - forecast_accuracy_improvement_vs_alternative
+#
+# Error Metrics:
+# - forecast_data_validation_errors
+# - forecast_model_errors
+# - forecast_validation_errors
+# - forecast_storage_errors
+# - forecast_fallback_count
