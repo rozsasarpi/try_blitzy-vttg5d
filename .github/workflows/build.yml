@@ -1,0 +1,192 @@
+# Build workflow configuration for GitHub Actions
+name: Build Docker Images
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags:
+      - 'v*.*.*'
+    paths:
+      - 'src/**'
+      - 'infrastructure/**'
+      - '.github/workflows/build.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'infrastructure/**'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag for the images'
+        required: false
+        type: string
+        default: ''
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE_NAME: ${{ github.repository }}/forecasting-backend
+  WEB_IMAGE_NAME: ${{ github.repository }}/forecasting-web
+
+jobs:
+  build-backend:
+    name: Build Backend Image
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.image-metadata.outputs.name }}
+      tags: ${{ steps.image-metadata.outputs.tags }}
+    steps:
+      # Checkout repository code
+      - name: Checkout repository # actions/checkout v3
+        uses: actions/checkout@v3
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2 # docker/setup-buildx-action v2
+      # Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2 # docker/login-action v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Extract Docker metadata
+      - name: Extract Docker metadata
+        id: image-metadata
+        uses: docker/metadata-action@v4 # docker/metadata-action v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+      # Build and push Docker image
+      - name: Build and push Docker image
+        id: build-push
+        uses: docker/build-push-action@v4 # docker/build-push-action v4
+        with:
+          context: src/backend
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.image-metadata.outputs.tags }}
+          labels: ${{ steps.image-metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # Generate build report
+      - name: Generate build report
+        run: |
+          echo "## Backend Image Build Results" > backend-build-report.md
+          echo "**Image:** ${{ steps.image-metadata.outputs.name }}" >> backend-build-report.md
+          echo "**Tags:** ${{ steps.image-metadata.outputs.tags }}" >> backend-build-report.md
+          echo "**Build Status:** ${{ steps.build-push.outcome == 'success' && '✅ Success' || '❌ Failed' }}" >> backend-build-report.md
+      # Upload build report
+      - name: Upload build report
+        uses: actions/upload-artifact@v3 # actions/upload-artifact v3
+        with:
+          name: backend-build-report
+          path: backend-build-report.md
+
+  build-web:
+    name: Build Web Image
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.image-metadata.outputs.name }}
+      tags: ${{ steps.image-metadata.outputs.tags }}
+    steps:
+      # Checkout repository code
+      - name: Checkout repository # actions/checkout v3
+        uses: actions/checkout@v3
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2 # docker/setup-buildx-action v2
+      # Login to GitHub Container Registry
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2 # docker/login-action v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # Extract Docker metadata
+      - name: Extract Docker metadata
+        id: image-metadata
+        uses: docker/metadata-action@v4 # docker/metadata-action v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+      # Build and push Docker image
+      - name: Build and push Docker image
+        id: build-push
+        uses: docker/build-push-action@v4 # docker/build-push-action v4
+        with:
+          context: src/web
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.image-metadata.outputs.tags }}
+          labels: ${{ steps.image-metadata.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # Generate build report
+      - name: Generate build report
+        run: |
+          echo "## Web Image Build Results" > web-build-report.md
+          echo "**Image:** ${{ steps.image-metadata.outputs.name }}" >> web-build-report.md
+          echo "**Tags:** ${{ steps.image-metadata.outputs.tags }}" >> web-build-report.md
+          echo "**Build Status:** ${{ steps.build-push.outcome == 'success' && '✅ Success' || '❌ Failed' }}" >> web-build-report.md
+      # Upload build report
+      - name: Upload build report
+        uses: actions/upload-artifact@v3 # actions/upload-artifact v3
+        with:
+          name: web-build-report
+          path: web-build-report.md
+
+  build-summary:
+    name: Build Summary
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-web]
+    if: always()
+    steps:
+      # Create build summary
+      - name: Create build summary
+        run: echo "## Build Results Summary" > build-summary.md
+      # Check backend build status
+      - name: Check backend build status
+        run: |
+          if [ "${{ needs.build-backend.result }}" == "success" ]; then
+            echo "✅ Backend Image: Built successfully" >> build-summary.md
+          else
+            echo "❌ Backend Image: Build failed" >> build-summary.md
+          fi
+      # Check web build status
+      - name: Check web build status
+        run: |
+          if [ "${{ needs.build-web.result }}" == "success" ]; then
+            echo "✅ Web Image: Built successfully" >> build-summary.md
+          else
+            echo "❌ Web Image: Build failed" >> build-summary.md
+          fi
+      # Add backend image info
+      - name: Add backend image info
+        if: ${{ needs.build-backend.result == 'success' }}
+        run: |
+          echo "**Backend Image:** ${{ needs.build-backend.outputs.image }}" >> build-summary.md
+          echo "**Backend Tags:** ${{ needs.build-backend.outputs.tags }}" >> build-summary.md
+      # Add web image info
+      - name: Add web image info
+        if: ${{ needs.build-web.result == 'success' }}
+        run: |
+          echo "**Web Image:** ${{ needs.build-web.outputs.image }}" >> build-summary.md
+          echo "**Web Tags:** ${{ needs.build-web.outputs.tags }}" >> build-summary.md
+      # Add build timestamp
+      - name: Add build timestamp
+        run: echo "**Build Time:** $(date)" >> build-summary.md
+      # Upload build summary
+      - name: Upload build summary
+        uses: actions/upload-artifact@v3 # actions/upload-artifact v3
+        with:
+          name: build-summary
+          path: build-summary.md
