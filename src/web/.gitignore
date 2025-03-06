@@ -1,0 +1,53 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment and local configuration
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Node.js dependencies
+node_modules/
+npm-debug.log
+
+# TypeScript compiled output
+assets/js/*.js
+assets/js/*.js.map
+
+# Cache files
+.cache/
+
+# Temporary data files
+data/cache/
+
+# Logs
+logs/
+*.log
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Testing artifacts
+.coverage
+coverage.xml
+.pytest_cache/
+
+# Mypy cache
+.mypy_cache/
+
+# ESLint cache
+.eslintcache
